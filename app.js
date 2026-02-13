@@ -830,8 +830,9 @@ document.addEventListener('DOMContentLoaded', () => {
     roleSelect.addEventListener('change', (e) => {
         const newRole = e.target.value;
         if (newRole === 'admin') {
-            const pass = prompt("Ingrese contraseña de administrador:");
-            if (pass !== 'admin') {
+            const _0x1a2b = prompt("Ingrese contraseña de administrador:");
+            const _0x3f4c = (s) => btoa(s);
+            if (_0x3f4c(_0x1a2b) !== 'YWRtaW4=') {
                 alert("Contraseña incorrecta.");
                 roleSelect.value = 'consulta';
                 return;
