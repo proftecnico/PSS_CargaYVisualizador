@@ -1,44 +1,91 @@
-// --- Store Logic (formerly store.js) ---
-const INITIAL_DATA = {
-    providers: [
-        {
-            id: 'p1',
-            name: 'Constructora S.A.',
-            cuit: '30-12345678-9',
-            docs: {
-                cuit: { status: 'ok', expiry: '2026-12-31' },
-                estatuto: { status: 'warning', expiry: '2026-03-15' },
-                aportes: { status: 'error', expiry: '2026-02-01' },
-                art: { status: 'ok', expiry: '2026-06-30' },
-                rc: { status: 'ok', expiry: '2026-08-20' },
-                pss: { status: 'ok', expiry: '2026-09-10' },
-                emergencia: { status: 'ok', expiry: '2027-01-01' },
-                iso: { status: 'ok', expiry: '2028-01-01' },
-                firma: { status: 'ok', expiry: '2030-01-01' }
-            },
-            personnel: [
-                { id: 'per1', name: 'Juan Pérez', authorized: true, docs: { medical: '2026-10-10', safety: '2026-11-12' } },
-                { id: 'per2', name: 'Maria Lopez', authorized: false, docs: { medical: '2026-01-01', safety: '2026-12-12' } }
-            ],
-            vehicles: [
-                { id: 'v1', domain: 'AF123JK', vtv: '2026-05-10', insurance: '2026-07-20' },
-                { id: 'v2', domain: 'OL987MM', vtv: '2026-01-15', insurance: '2026-04-10' }
-            ]
-        }
-    ],
-    role: 'consulta'
+// ---// Firebase Configuration
+const firebaseConfig = {
+    databaseURL: "https://pssdatabase-66e69-default-rtdb.firebaseio.com/" // User should replace this with their actual Firebase URL
 };
+
+// Initialize Firebase
+if (window.firebase) {
+    firebase.initializeApp(firebaseConfig);
+}
 
 class Store {
     constructor() {
-        const saved = localStorage.getItem('pss_registro_data');
-        this.data = saved ? JSON.parse(saved) : INITIAL_DATA;
-        this.listeners = [];
+        this.key = 'pss_registro_data';
+        this.data = this.loadLocal();
+        this.db = window.firebase ? firebase.database().ref('pss_data') : null;
+        this.role = 'consulta';
+        this.onSync = null;
+    }
+
+    async init() {
+        if (!this.db) {
+            this.hideLoading();
+            return;
+        }
+
+        // Real-time synchronization
+        this.db.on('value', (snapshot) => {
+            const cloudData = snapshot.val();
+            if (cloudData) {
+                this.data = cloudData;
+                this.saveLocal();
+                if (this.onSync) this.onSync();
+            } else {
+                this.save(); // Migrate local to cloud
+            }
+            this.hideLoading();
+        }, (error) => {
+            console.error('Firebase Error:', error);
+            this.hideLoading();
+        });
+    }
+
+    hideLoading() {
+        const overlay = document.getElementById('loading-overlay');
+        if (overlay) overlay.style.display = 'none';
+    }
+
+    loadLocal() {
+        const saved = localStorage.getItem(this.key);
+        return saved ? JSON.parse(saved) : {
+            providers: [
+                {
+                    id: 'p1',
+                    name: 'Constructora S.A.',
+                    cuit: '30-12345678-9',
+                    docs: {
+                        cuit: { status: 'ok', expiry: '2025-12-31' },
+                        estatuto: { status: 'ok', expiry: '2026-06-30' },
+                        aportes: { status: 'ok', expiry: '2024-05-30' },
+                        art: { status: 'error', expiry: '2024-01-15' },
+                        rc: { status: 'ok', expiry: '2024-11-20' },
+                        pss: { status: 'ok', expiry: '2024-09-01' },
+                        emergencia: { status: 'ok', expiry: '2025-01-10' },
+                        iso: { status: 'warning', expiry: '2024-03-30' },
+                        firma: { status: 'ok', expiry: '2025-12-31' }
+                    },
+                    personnel: [
+                        { id: 'per1', name: 'Juan Pérez', authorized: true, docs: { medical: '2024-12-31', safety: '2024-12-31' } },
+                        { id: 'per2', name: 'Maria Lopez', authorized: false, docs: { medical: '2023-12-31', safety: '2024-12-31' } }
+                    ],
+                    vehicles: [
+                        { id: 'v1', domain: 'ABC 123', vtv: '2024-12-31', insurance: '2024-12-31' },
+                        { id: 'v2', domain: 'OL987MM', vtv: '2023-10-15', insurance: '2024-05-20' }
+                    ]
+                }
+            ]
+        };
+    }
+
+    saveLocal() {
+        localStorage.setItem(this.key, JSON.stringify(this.data));
     }
 
     save() {
-        localStorage.setItem('pss_registro_data', JSON.stringify(this.data));
-        this.listeners.forEach(l => l(this.data));
+        this.saveLocal();
+        if (this.db) {
+            this.db.set(this.data);
+        }
     }
 
     getProviders() {
@@ -851,6 +898,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     handleNav('dashboard');
+
+    // Initialize Store with Firebase
+    store.onSync = () => {
+        handleNav(AppState.currentView, AppState.currentProviderId);
+    };
+    store.init();
 
     // PWA: Check for standalone mode
     if (window.matchMedia('(display-mode: standalone)').matches) {

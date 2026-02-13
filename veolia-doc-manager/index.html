@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Veolia | Gestión de Documentación</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div id="app">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <span class="logo-text">VEOLIA</span>
+            </div>
+            <nav>
+                <button class="nav-item active" data-view="dashboard">
+                    <i data-lucide="layout-dashboard"></i> Dashboard
+                </button>
+                <button class="nav-item" data-view="providers">
+                    <i data-lucide="users"></i> Proveedores
+                </button>
+                <button class="nav-item" data-view="vehicles">
+                    <i data-lucide="truck"></i> Flota
+                </button>
+            </nav>
+            <div class="user-role-selector">
+                <label for="role-select">Rol:</label>
+                <select id="role-select">
+                    <option value="consulta">Consulta</option>
+                    <option value="admin">Administrador</option>
+                </select>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <header class="top-bar">
+                <h1 id="view-title">Dashboard</h1>
+                <div class="user-info">
+                    <span id="current-user-role">Consulta</span>
+                </div>
+            </header>
+            <div id="view-container">
+                <!-- Views will be injected here -->
+            </div>
+        </main>
+    </div>
+    <script type="module" src="main.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
