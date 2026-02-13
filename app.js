@@ -650,20 +650,26 @@ window.app = {
                         names: []
                     };
 
-                    // Regex for dates
-                    const dateRegex = /(\d{4}-\d{2}-\d{2})|(\d{2}\/\d{2}\/\d{4})|(\d{2}-\d{2}-\d{4})/g;
+                    // Regex for dates (Supports DD/MM/YYYY, DD-MM-YYYY, DD.MM.YYYY, YYYY-MM-DD, and 2-digit years)
+                    const dateRegex = /\b(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4})\b|\b(\d{4}[\/\-\.]\d{1,2}[\/\-\.]\d{1,2})\b/g;
                     const dateMatches = fullText.match(dateRegex);
                     if (dateMatches) {
                         result.dates = [...new Set(dateMatches.map(m => {
-                            if (m.includes('/')) {
-                                const parts = m.split('/');
-                                return `${parts[2]}-${parts[1]}-${parts[0]}`;
-                            } else if (m.includes('-') && m.indexOf('-') === 2) {
-                                const parts = m.split('-');
-                                return `${parts[2]}-${parts[1]}-${parts[0]}`;
+                            const clean = m.replace(/[\/\.]/g, '-');
+                            const parts = clean.split('-');
+                            if (parts[0].length === 4) {
+                                return clean;
+                            } else {
+                                let d = parts[0].padStart(2, '0');
+                                let m = parts[1].padStart(2, '0');
+                                let y = parts[2];
+                                if (y.length === 2) y = '20' + y;
+                                return `${y}-${m}-${d}`;
                             }
-                            return m;
-                        }).filter(d => !isNaN(Date.parse(d))))].sort((a, b) => Date.parse(b) - Date.parse(a));
+                        }).filter(d => {
+                            const date = new Date(d);
+                            return date instanceof Date && !isNaN(date);
+                        }))].sort((a, b) => Date.parse(b) - Date.parse(a));
                     }
 
                     // Regex for domains (Patentes Argentina: AAA 111 or AA 111 BB)
@@ -673,8 +679,8 @@ window.app = {
                         result.domains = [...new Set(domainMatches.map(m => m.replace(/\s/g, '').toUpperCase()))];
                     }
 
-                    // Heuristic for names (Words near "Nombre" or "Titular")
-                    const nameRegex = /(?:NOMBRE|CAPACITADO|TITULAR|CONDUCTOR|PERSONAL):\s?([A-ZÁÉÍÓÚÑ]{2,}(?:\s[A-ZÁÉÍÓÚÑ]{2,})+)/i;
+                    // Heuristic for names (Expanded keywords for Argentinian documents)
+                    const nameRegex = /(?:NOMBRE|CAPACITADO|TITULAR|CONDUCTOR|PERSONAL|RAZÓN SOCIAL|ASEGURADO|EMPLEADO):\s?([A-ZÁÉÍÓÚÑ]{2,}(?:\s[A-ZÁÉÍÓÚÑ]{2,})+)/i;
                     const nameMatch = fullText.match(nameRegex);
                     if (nameMatch) {
                         result.names.push(nameMatch[1].trim());
