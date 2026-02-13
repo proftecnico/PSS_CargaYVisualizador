@@ -1,0 +1,17 @@
+{
+  "name": "Sistema de Registro PSS",
+  "short_name": "Registro PSS",
+  "description": "Gestión de documentación Veolia - J. Garavagno®",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><path d=%22M50 5 L10 25 V50 C10 75 50 95 50 95 C50 95 90 75 90 50 V25 L50 5Z%22 fill=%22%230f172a%22/><path d=%22M35 50 L45 60 L65 40%22 stroke=%22%2310b981%22 stroke-width=%228%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 fill=%22none%22/></svg>",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
